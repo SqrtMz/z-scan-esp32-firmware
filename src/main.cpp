@@ -1,32 +1,45 @@
 #include <Arduino.h>
-#include <DHT.h>
 
-DHT dht(21, DHT22);
+int pot_pin = 25;
+float pot_value = 0.0;
+float sum_pot = 0.0;
+float mean_pot = 0.0;
+float mean_pot_value = 0.0;
+
+String command = "";
 
 void setup() {
 
-	pinMode(17, OUTPUT);
-	digitalWrite(17, HIGH);
-
-	Serial.begin(9600);
-
-	dht.begin();
-
-	Serial.println("Ready");
+	Serial.begin(115200);
+	pinMode(pot_pin, INPUT);
 }
 
 void loop() {
 
-	float temp = dht.readTemperature();
-	float hum = dht.readHumidity();
+	for (size_t i = 0; i < 10; i++) {
 
-	Serial.print("The temperature is: ");
-	Serial.println(temp);
+		if (Serial.available()) {
 
-	Serial.print("The humidity is: ");
-	Serial.println(hum);
+			char m = Serial.read();
+			command += String(m);
+		}
+	}
 
-	Serial.println("=======================");
+	sum_pot = 0.0;
 
-	delay(1000);
+	for (size_t i = 0; i < 100; i++)
+	{
+		pot_value = analogRead(pot_pin);
+		sum_pot += pot_value;
+	}
+	
+	mean_pot_value = sum_pot / 100;
+
+	// Serial.println(command);
+	// Serial.println("==========================");
+	Serial.println(mean_pot_value);
+	// Serial.println("==========================");
+
+	// delay(1000);
+	command = "";
 }
