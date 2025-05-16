@@ -22,8 +22,11 @@ void loop() {
 
 			char m = Serial.read();
 			command += String(m);
-		}
+
+		} else { break; }
 	}
+
+	if (Serial.available()) { Serial.println(command); }
 
 	sum_pot = 0.0;
 
@@ -35,11 +38,26 @@ void loop() {
 	
 	mean_pot_value = sum_pot / 100;
 
-	// Serial.println(command);
-	// Serial.println("==========================");
-	Serial.println(mean_pot_value);
-	// Serial.println("==========================");
+	if (!Serial.available()) { Serial.println(mean_pot_value); }
 
-	// delay(1000);
+
+	if (command == "write") {
+
+		for (size_t i = 0; i < 1000; i++)
+		{
+			Serial.println("WRITING");
+		}
+
+	} else if (command == "read") {
+
+		for (size_t i = 0; i < 1000; i++)
+		{
+			Serial.println("READING");
+		}
+
+	}
+
+	delay(1);
+
 	command = "";
 }
