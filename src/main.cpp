@@ -8,7 +8,7 @@ int pul_pin = 27;
 int lim_switch_start_pin = 32;
 int lim_switch_end_pin = 34;
 
-int pot_pin = 33;
+int ref_photo_diode = 33;
 float pot_value = 0.0;
 float sum_pot = 0.0;
 float mean_pot = 0.0;
@@ -25,7 +25,7 @@ void reset_position() {
 void setup() {
 
 	Serial.begin(115200);
-	pinMode(pot_pin, INPUT);
+	pinMode(ref_photo_diode, INPUT);
 
 	pinMode(dir_pin, OUTPUT);
 	pinMode(pul_pin, OUTPUT);
@@ -71,7 +71,7 @@ void loop() {
 
 	for (size_t i = 0; i < 100; i++)
 	{
-		pot_value = analogRead(pot_pin);
+		pot_value = analogRead(ref_photo_diode);
 		sum_pot += pot_value;
 	}
 	
