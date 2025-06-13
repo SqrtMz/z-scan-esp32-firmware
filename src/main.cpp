@@ -18,8 +18,42 @@ String command = "";
 
 AccelStepper stepper(AccelStepper::DRIVER, pul_pin, dir_pin);
 
-void reset_position() {
+String get_command() {
 
+	for (size_t i = 0; i < 20; i++) {
+
+		if (Serial.available()) {
+
+			char m = Serial.read();
+			command += String(m);
+
+		} else { break; }
+	}
+
+	return command;
+}
+
+void go_to_start() {
+
+	while (!lim_switch_start_pin) {
+		stepper.setSpeed(-400);
+		stepper.runSpeed();
+	}
+
+	stepper.setSpeed(0);
+	stepper.runSpeed();
+	stepper.setCurrentPosition(0);
+}
+
+void go_to_end() {
+
+	while (!lim_switch_end_pin) {
+		stepper.setSpeed(400);
+		stepper.runSpeed();
+	}
+
+	stepper.setSpeed(0);
+	stepper.runSpeed();
 }
 
 void setup() {
@@ -37,16 +71,17 @@ void setup() {
 	pinMode(lim_switch_end_pin, INPUT_PULLDOWN);
 
 	stepper.setMaxSpeed(400);
-	stepper.setSpeed(map(mean_pot_value, 0, 4095, -500, 500));
+
+	go_to_start();
+	
 }
 
 void loop() {
 
-	if (digitalRead(lim_switch_start_pin)) { stepper.setSpeed(0); }
-	else if (digitalRead(lim_switch_end_pin)) { stepper.setSpeed(0); }
-	else { stepper.setSpeed(map(mean_pot_value, 0, 4095, -500, 500)); }
-
-	stepper.runSpeed();
+	// if (digitalRead(lim_switch_start_pin)) { stepper.setSpeed(0); }
+	// else if (digitalRead(lim_switch_end_pin)) { stepper.setSpeed(0); }
+	// else { stepper.setSpeed(map(mean_pot_value, 0, 4095, -500, 500)); }
+	// stepper.runSpeed();
 
 	Serial.print("Start limit switch: ");
 	Serial.print(digitalRead(lim_switch_start_pin));
@@ -55,31 +90,13 @@ void loop() {
 	Serial.print(digitalRead(lim_switch_end_pin));
 	Serial.print(" || ");
 
-	for (size_t i = 0; i < 20; i++) {
-
-		if (Serial.available()) {
-
-			char m = Serial.read();
-			command += String(m);
-
-		} else { break; }
-	}
+	command = get_command();
 
 	if (Serial.available()) { Serial.println(command); }
-
-	sum_pot = 0.0;
-
-	for (size_t i = 0; i < 100; i++)
-	{
-		pot_value = analogRead(ref_photo_diode);
-		sum_pot += pot_value;
-	}
-	
-	mean_pot_value = sum_pot / 100;
-
-	if (!Serial.available()) { Serial.println(mean_pot_value); }
+	if (!Serial.available()) { Serial.println(ref_photo_diode); }
 
 
+	// Command section
 	if (command == "write") {
 
 		for (size_t i = 0; i < 1000; i++)
@@ -93,8 +110,10 @@ void loop() {
 		{
 			Serial.println("READING");
 		}
+	}
 
-	} else if (command == "reset_position") { reset_position(); }
+	else if (command == "go_to_start") { go_to_start(); }
+	else if (command == "go_to_end") { go_to_end(); }
 
 	delay(1);
 
