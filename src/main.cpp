@@ -8,11 +8,8 @@ int pul_pin = 27;
 int lim_switch_start_pin = 32;
 int lim_switch_end_pin = 34;
 
-int ref_photo_diode = 33;
+int ref_photo_diode_pin = 33;
 float pot_value = 0.0;
-float sum_pot = 0.0;
-float mean_pot = 0.0;
-float mean_pot_value = 0.0;
 
 String command = "";
 
@@ -35,8 +32,8 @@ String get_command() {
 
 void go_to_start() {
 
-	while (!lim_switch_start_pin) {
-		stepper.setSpeed(-400);
+	while (!digitalRead(lim_switch_start_pin)) {
+		stepper.setSpeed(-750);
 		stepper.runSpeed();
 	}
 
@@ -47,8 +44,8 @@ void go_to_start() {
 
 void go_to_end() {
 
-	while (!lim_switch_end_pin) {
-		stepper.setSpeed(400);
+	while (!digitalRead(lim_switch_end_pin)) {
+		stepper.setSpeed(750);
 		stepper.runSpeed();
 	}
 
@@ -59,7 +56,7 @@ void go_to_end() {
 void setup() {
 
 	Serial.begin(115200);
-	pinMode(ref_photo_diode, INPUT);
+	pinMode(ref_photo_diode_pin, INPUT);
 
 	pinMode(dir_pin, OUTPUT);
 	pinMode(pul_pin, OUTPUT);
@@ -70,7 +67,7 @@ void setup() {
 	pinMode(lim_switch_start_pin, INPUT_PULLDOWN);
 	pinMode(lim_switch_end_pin, INPUT_PULLDOWN);
 
-	stepper.setMaxSpeed(400);
+	stepper.setMaxSpeed(1000);
 
 	go_to_start();
 	
@@ -78,10 +75,7 @@ void setup() {
 
 void loop() {
 
-	// if (digitalRead(lim_switch_start_pin)) { stepper.setSpeed(0); }
-	// else if (digitalRead(lim_switch_end_pin)) { stepper.setSpeed(0); }
-	// else { stepper.setSpeed(map(mean_pot_value, 0, 4095, -500, 500)); }
-	// stepper.runSpeed();
+	pot_value = analogRead(ref_photo_diode_pin);
 
 	Serial.print("Start limit switch: ");
 	Serial.print(digitalRead(lim_switch_start_pin));
@@ -93,7 +87,7 @@ void loop() {
 	command = get_command();
 
 	if (Serial.available()) { Serial.println(command); }
-	if (!Serial.available()) { Serial.println(ref_photo_diode); }
+	if (!Serial.available()) { Serial.println(pot_value); }
 
 
 	// Command section
@@ -110,10 +104,16 @@ void loop() {
 		{
 			Serial.println("READING");
 		}
-	}
 
-	else if (command == "go_to_start") { go_to_start(); }
-	else if (command == "go_to_end") { go_to_end(); }
+	} else if (command == "go_to_start") {
+
+		go_to_start();
+
+	} else if (command == "go_to_end") {
+
+		go_to_end();
+
+	}
 
 	delay(1);
 
