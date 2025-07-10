@@ -73,6 +73,11 @@ void execute() {
 	stepper.moveTo(new_position);
 }
 
+void stop() {
+	stepper.setSpeed(0);
+	stepper.runSpeed();
+}
+
 void setup() {
 
 	Serial.begin(115200);
@@ -102,6 +107,7 @@ void loop() {
 	if (commands[0] == "execute") {execute();}
 	else if (commands[0] == "go_to_start") {go_to_start();}
 	else if (commands[0] == "go_to_end") {go_to_end();}
+	else if (commands[0] == "stop") {stop();}
 
 	String commands[10];
 }
