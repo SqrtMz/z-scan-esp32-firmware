@@ -68,7 +68,9 @@ void go_to_end() {
 }
 
 void execute() {
-	//
+	int new_position = commands[1].toInt();
+
+	stepper.moveTo(new_position);
 }
 
 void setup() {
