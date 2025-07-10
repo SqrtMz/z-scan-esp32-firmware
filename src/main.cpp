@@ -8,26 +8,40 @@ int pul_pin = 27;
 int lim_switch_start_pin = 32;
 int lim_switch_end_pin = 34;
 
-int ref_photo_diode_pin = 33;
-float pot_value = 0.0;
+int photo_diode_pin = 33;
+float photo_diode_value = 0.0;
+float sum_pot = 0.0;
+float mean_pot = 0.0;
+float mean_pot_value = 0.0;
 
-String command = "";
+String commands[10];
 
 AccelStepper stepper(AccelStepper::DRIVER, pul_pin, dir_pin);
 
-String get_command() {
+void read_incoming_data() {
+	
+	char incoming_data[100];
 
-	for (size_t i = 0; i < 20; i++) {
-
+	for (size_t i = 0; i < 100; i++) {
+		
 		if (Serial.available()) {
 
 			char m = Serial.read();
-			command += String(m);
+			
+			incoming_data[i] = m;
 
 		} else { break; }
+
 	}
 
-	return command;
+	String token;
+
+	int i = 0;
+	while (token = strtok(NULL, ",")) {
+
+		token = strtok(incoming_data, ",");
+		commands[i] = token;
+	}
 }
 
 void go_to_start() {
@@ -53,10 +67,14 @@ void go_to_end() {
 	stepper.runSpeed();
 }
 
+void execute() {
+	//
+}
+
 void setup() {
 
 	Serial.begin(115200);
-	pinMode(ref_photo_diode_pin, INPUT);
+	pinMode(photo_diode_pin, INPUT);
 
 	pinMode(dir_pin, OUTPUT);
 	pinMode(pul_pin, OUTPUT);
@@ -70,52 +88,18 @@ void setup() {
 	stepper.setMaxSpeed(1000);
 
 	go_to_start();
-	
+
 }
 
 void loop() {
 
-	pot_value = analogRead(ref_photo_diode_pin);
+	read_incoming_data();
 
-	Serial.print("Start limit switch: ");
-	Serial.print(digitalRead(lim_switch_start_pin));
-	Serial.print(" || ");
-	Serial.print("End limit switch: ");
-	Serial.print(digitalRead(lim_switch_end_pin));
-	Serial.print(" || ");
+	if (Serial.available()) {Serial.println(commands[0]);} else {Serial.println(photo_diode_value);}
 
-	command = get_command();
+	if (commands[0] == "execute") {execute();}
+	else if (commands[0] == "go_to_start") {go_to_start();}
+	else if (commands[0] == "go_to_end") {go_to_end();}
 
-	if (Serial.available()) { Serial.println(command); }
-	if (!Serial.available()) { Serial.println(pot_value); }
-
-
-	// Command section
-	if (command == "write") {
-
-		for (size_t i = 0; i < 1000; i++)
-		{
-			Serial.println("WRITING");
-		}
-
-	} else if (command == "read") {
-
-		for (size_t i = 0; i < 1000; i++)
-		{
-			Serial.println("READING");
-		}
-
-	} else if (command == "go_to_start") {
-
-		go_to_start();
-
-	} else if (command == "go_to_end") {
-
-		go_to_end();
-
-	}
-
-	delay(1);
-
-	command = "";
+	String commands[10];
 }
