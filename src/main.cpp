@@ -10,37 +10,47 @@ int lim_switch_end_pin = 34;
 
 int photo_diode_pin = 33;
 float photo_diode_value = 0.0;
-float sum_pot = 0.0;
-float mean_pot = 0.0;
-float mean_pot_value = 0.0;
 
+char incoming_data[100];
 String commands[10];
 
 AccelStepper stepper(AccelStepper::DRIVER, pul_pin, dir_pin);
 
 void read_incoming_data() {
-	
-	char incoming_data[100];
 
-	for (size_t i = 0; i < 100; i++) {
+	uint i = 0;
+	while (Serial.available()) {
+
+		char c = Serial.read();
 		
-		if (Serial.available()) {
+		incoming_data[i] = c;
 
-			char m = Serial.read();
-			
-			incoming_data[i] = m;
-
-		} else { break; }
-
+		i++;
 	}
 
-	String token;
+	i = 0;
+	uint j = 0;
+	while (true) {
 
-	int i = 0;
-	while (token = strtok(NULL, ",")) {
+		char c = incoming_data[j];
 
-		token = strtok(incoming_data, ",");
-		commands[i] = token;
+		if (c == '\0') {
+
+			break;
+			
+		} else if (c == ',') {
+
+			i++;
+			j++;
+
+		} else {
+
+			commands[i] += c;
+			
+			j++;
+
+		}
+
 	}
 }
 
@@ -94,20 +104,41 @@ void setup() {
 
 	stepper.setMaxSpeed(1000);
 
-	go_to_start();
+	// go_to_start();
 
 }
 
 void loop() {
 
-	read_incoming_data();
+	if (Serial.available()) { read_incoming_data(); }
+	
+	photo_diode_value = analogRead(photo_diode_pin);
 
-	if (Serial.available()) {Serial.println(commands[0]);} else {Serial.println(photo_diode_value);}
+	if (Serial.available()) {Serial.println(commands[2]);} else {Serial.println(photo_diode_value);}
 
 	if (commands[0] == "execute") {execute();}
 	else if (commands[0] == "go_to_start") {go_to_start();}
 	else if (commands[0] == "go_to_end") {go_to_end();}
 	else if (commands[0] == "stop") {stop();}
+	else if (commands[2] == "pan") {
 
-	String commands[10];
+		uint j = 0;
+		for (size_t i = 0; i < 99; i++) {
+
+			if (j == 3) { j = 0; Serial.println(); }
+			if (j == 2) { Serial.print(commands[j]); j++; continue;}
+
+			Serial.print(commands[j]);
+
+			j++;
+		}
+		
+	}
+
+	delay(100);
+
+	incoming_data[0] = '\0';
+	commands[0] = "";
+	commands[1] = "";
+	commands[2] = "";
 }
