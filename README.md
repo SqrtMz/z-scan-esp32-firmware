@@ -1,1 +1,1 @@
-# z-scan-firmware-microcontroller
+# z-scan-microcontroller
