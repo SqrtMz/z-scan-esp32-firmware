@@ -86,13 +86,13 @@ void loop() {
 	if (Serial.available()) {
 		read_incoming_data(incoming_data, commands);
 
-		for (size_t i = 0; i < 10; i++)
-		{
-			Serial.print(commands[i]);
-			Serial.print(',');
-		}
+		// for (size_t i = 0; i < 10; i++)
+		// {
+		// 	Serial.print(commands[i]);
+		// 	Serial.print(',');
+		// }
 
-		Serial.println();
+		// Serial.println();
 	}
 
 	if (commands[0] == "execute") { is_moving = true; go_to_start(); }
@@ -102,20 +102,18 @@ void loop() {
 		stepper.runSpeed();
 		is_moving = false;
 		
-		Serial.println("Stopped");
+		// Serial.println("Stopped");
 	}
 
 	else if (commands[0] == "go_to_start") {go_to_start();}
 	else if (commands[0] == "go_to_end") {go_to_end();}
 	else if (commands[0] == "stop") {stop();}
-	else if (commands[0] == "test") {
+	else if (commands[0] == "reset_plot") {
 
-		for (size_t i = 0; i < 3; i++)
+		for (size_t i = 0; i < 100; i++)
 		{
-			Serial.print(commands[i]);
+			Serial.println("resetting...");
 		}
-
-		Serial.println();
 	}
 
 	if (is_moving && !digitalRead(lim_switch_start_pin) && !digitalRead(lim_switch_end_pin)) {
