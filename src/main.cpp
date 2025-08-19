@@ -7,7 +7,7 @@ int dir_pin = 26;
 int pul_pin = 27;
 
 int lim_switch_start_pin = 32;
-int lim_switch_end_pin = 34;
+int lim_switch_end_pin = 35;
 
 int photo_diode_pin = 33;
 float photo_diode_value = 0.0;
@@ -32,11 +32,11 @@ void print_data() {
 
 void go_to_start() {
 
-	// while (!digitalRead(lim_switch_start_pin)) {
-	// 	stepper.move(-1);
-	// 	stepper.setSpeed(-max_motor_speed);
-	// 	stepper.runSpeed();
-	// }
+	while (!digitalRead(lim_switch_start_pin)) {
+		stepper.move(-1);
+		stepper.setSpeed(-max_motor_speed);
+		stepper.runSpeed();
+	}
 
 	stepper.setSpeed(0);
 	stepper.runSpeed();
@@ -45,10 +45,10 @@ void go_to_start() {
 
 void go_to_end() {
 
-	// while (!digitalRead(lim_switch_end_pin)) {
-	// 	stepper.setSpeed(max_motor_speed);
-	// 	stepper.runSpeed();
-	// }
+	while (!digitalRead(lim_switch_end_pin)) {
+		stepper.setSpeed(max_motor_speed);
+		stepper.runSpeed();
+	}
 
 	stepper.setSpeed(0);
 	stepper.runSpeed();
@@ -75,7 +75,7 @@ void setup() {
 
 	stepper.setMaxSpeed(1000);
 
-	go_to_start();
+	// go_to_start();
 }
 
 void loop() {
@@ -86,23 +86,23 @@ void loop() {
 	if (Serial.available()) {
 		read_incoming_data(incoming_data, commands);
 
-		// for (size_t i = 0; i < 10; i++)
-		// {
-		// 	Serial.print(commands[i]);
-		// 	Serial.print(',');
-		// }
+		for (size_t i = 0; i < 10; i++)
+		{
+			Serial.print(commands[i]);
+			Serial.print(',');
+		}
 
-		// Serial.println();
+		Serial.println();
 	}
 
-	if (commands[0] == "execute") { is_moving = true; go_to_start(); }
+	if (commands[0] == "execute") { is_moving = true; /*go_to_start();*/ }
 
 	else if (commands[0] == "stop") {
 		stepper.setSpeed(0);
 		stepper.runSpeed();
 		is_moving = false;
 		
-		// Serial.println("Stopped");
+		Serial.println("Stopped");
 	}
 
 	else if (commands[0] == "go_to_start") {go_to_start();}
@@ -121,7 +121,7 @@ void loop() {
 		if (commands[0] == "execute") {
 			move_from = commands[1].toFloat();
 			move_to = commands[2].toFloat();
-			motor_speed = commands[3].toFloat() * max_motor_speed;
+			motor_speed = ((commands[3].toFloat() + 1) * 0.01) * max_motor_speed; 
 			measure_separation = commands[4].toFloat();
 			stabilization_time = commands[5].toFloat();
 		}
@@ -148,8 +148,6 @@ void loop() {
 		}
 
 	}
-
-	delay(100);
 
 	incoming_data[0] = '\0';
 	memset(commands, '\0', sizeof(commands));
