@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <AccelStepper.h>
+#include <Adafruit_ADS1X15.h>
+#include <Wire.h>
 #include "fns.h"
 
 int ena_pin = 25;
@@ -17,6 +19,7 @@ float max_motor_speed = 750; // Maximum speed of the motor in steps per second
 char incoming_data[100];
 String commands[10];
 
+Adafruit_ADS1115 ads;
 AccelStepper stepper(AccelStepper::DRIVER, pul_pin, dir_pin);
 
 bool is_moving = false;
@@ -74,6 +77,9 @@ void setup() {
 	pinMode(lim_switch_end_pin, INPUT_PULLDOWN);
 
 	stepper.setMaxSpeed(1000);
+
+	ads.begin();
+	ads.setGain(GAIN_EIGHT);
 
 	// go_to_start();
 }
@@ -134,7 +140,8 @@ void loop() {
 			delay(stabilization_time);
 			move_from = stepper.currentPosition() + measure_separation;
 			
-			photo_diode_value = analogRead(photo_diode_pin);
+			photo_diode_value = ads.readADC_Differential_0_1();
+			photo_diode_value = ads.computeVolts(photo_diode_value);
 			print_data();
 		}
 
